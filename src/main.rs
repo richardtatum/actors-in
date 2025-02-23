@@ -1,68 +1,26 @@
+mod credits;
+mod details;
+mod traits;
+
 use std::process::exit;
 
+use credits::credits::CreditsResponse;
+use details::details::DetailsResponse;
 use reqwest::{Client, Response};
-use serde::Deserialize;
-
-#[derive(Deserialize, Debug)]
-struct MovieResponse {
-    title: String,
-    release_date: String,
-    runtime: u32,
-    overview: String,
-}
-
-#[derive(Deserialize, Debug)]
-struct CreditsResponse {
-    cast: Vec<Cast>,
-    crew: Vec<Crew>,
-}
-
-#[derive(Deserialize, Debug)]
-struct Cast {
-    name: String,
-    character: String,
-}
-
-#[derive(Deserialize, Debug)]
-struct Crew {
-    name: String,
-    job: String,
-}
+use traits::Printable;
 
 #[tokio::main]
 async fn main() {
-    let movie_id = std::env::args()
-        .nth(1)
-        .ok_or("Must provide a movie id!")
-        .and_then(|id| {
-            id.parse::<u32>()
-                .map_err(|_| "Invalid movie id. Must be a number!")
-        })
-        .unwrap_or_else(|e| {
-            eprintln!("{}", e);
-            exit(1)
-        });
-
-    let (movie, credits) = tokio::join!(get_movie(movie_id), get_credits(movie_id));
+    let movie_id = get_movie_id();
+    let (movie, credits) = tokio::join!(get_details(movie_id), get_credits(movie_id));
 
     println!("Checking for movie id: {} \n", movie_id);
     match movie {
         Some(movie) => {
-            println!("Title: {}", movie.title);
-            println!("Release Date: {}", movie.release_date);
-            println!("Runtime: {}", movie.runtime);
-            println!("Overview: {}", movie.overview);
+            movie.print();
 
             if let Some(credits) = credits {
-                println!("\nCast:");
-                for cast in credits.cast.iter().take(10) {
-                    println!("{} - {}", cast.name, cast.character);
-                }
-
-                println!("\nCrew:");
-                for crew in credits.crew.iter().take(5) {
-                    println!("{} - {}", crew.name, crew.job);
-                }
+                credits.print();
             }
         }
         None => {
@@ -72,12 +30,12 @@ async fn main() {
     }
 }
 
-async fn get_movie(movie_id: u32) -> Option<MovieResponse> {
+async fn get_details(movie_id: u32) -> Option<DetailsResponse> {
     let url = format!("https://api.themoviedb.org/3/movie/{movie_id}");
     let bearer_token = get_bearer_token();
     let resp = request(url, bearer_token).await?;
 
-    return resp.json::<MovieResponse>().await.ok();
+    return resp.json::<DetailsResponse>().await.ok();
 }
 
 async fn get_credits(movie_id: u32) -> Option<CreditsResponse> {
@@ -104,4 +62,18 @@ fn get_bearer_token() -> String {
         eprintln!("BEARER_TOKEN environment variable not set");
         exit(1)
     });
+}
+
+fn get_movie_id() -> u32 {
+    return std::env::args()
+        .nth(1)
+        .ok_or("Must provide a movie id!")
+        .and_then(|id| {
+            id.parse::<u32>()
+                .map_err(|_| "Invalid movie id. Must be a number!")
+        })
+        .unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            exit(1)
+        });
 }
