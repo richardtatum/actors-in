@@ -58,8 +58,9 @@ async fn request(url: String, bearer_token: String) -> Option<Response> {
 }
 
 fn get_bearer_token() -> String {
-    return std::env::var("BEARER_TOKEN").unwrap_or_else(|_| {
-        eprintln!("BEARER_TOKEN environment variable not set");
+    let variable_name = "ACCESS_TOKEN";
+    return std::env::var(variable_name).unwrap_or_else(|_| {
+        eprintln!("'{}' environment variable not set", variable_name);
         exit(1)
     });
 }
