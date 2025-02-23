@@ -12,12 +12,12 @@ use traits::Printable;
 #[tokio::main]
 async fn main() {
     let movie_id = get_movie_id();
-    let (movie, credits) = tokio::join!(get_details(movie_id), get_credits(movie_id));
+    let (details, credits) = tokio::join!(get_details(movie_id), get_credits(movie_id));
 
     println!("Checking for movie id: {} \n", movie_id);
-    match movie {
-        Some(movie) => {
-            movie.print();
+    match details {
+        Some(details) => {
+            details.print();
 
             if let Some(credits) = credits {
                 credits.print();
