@@ -12,7 +12,7 @@ use traits::Printable;
 #[tokio::main]
 async fn main() {
     let movie_id = get_movie_id();
-    let (details, credits) = tokio::join!(get_details(movie_id), get_credits(movie_id));
+    let (details, credits) = tokio::join!(get_details(&movie_id), get_credits(&movie_id));
 
     println!("Checking for movie id: {} \n", movie_id);
     match details {
@@ -30,7 +30,7 @@ async fn main() {
     }
 }
 
-async fn get_details(movie_id: u32) -> Option<DetailsResponse> {
+async fn get_details(movie_id: &u32) -> Option<DetailsResponse> {
     let url = format!("https://api.themoviedb.org/3/movie/{movie_id}");
     let bearer_token = get_bearer_token();
     let resp = request(url, bearer_token).await?;
@@ -38,7 +38,7 @@ async fn get_details(movie_id: u32) -> Option<DetailsResponse> {
     return resp.json::<DetailsResponse>().await.ok();
 }
 
-async fn get_credits(movie_id: u32) -> Option<CreditsResponse> {
+async fn get_credits(movie_id: &u32) -> Option<CreditsResponse> {
     let url = format!("https://api.themoviedb.org/3/movie/{movie_id}/credits");
     let bearer_token = get_bearer_token();
     let resp = request(url, bearer_token).await?;
