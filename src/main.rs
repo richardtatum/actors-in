@@ -4,7 +4,10 @@ mod traits;
 
 use std::process::exit;
 
-use api::{actors::ActorService, client::ApiClient};
+use api::{
+    actors::{ActorService, SearchPersonResult},
+    client::ApiClient,
+};
 
 #[tokio::main]
 async fn main() {
@@ -14,22 +17,7 @@ async fn main() {
     let actor_service = ActorService::new(api_client);
     let resp = actor_service.search_actor(&name).await;
     match resp {
-        Ok(result) => {
-            result.iter().for_each(|person| {
-                let movies = person
-                    .known_for
-                    .iter()
-                    .filter_map(|movie| movie.title.as_deref())
-                    .collect::<Vec<&str>>()
-                    .join(", ");
-
-                println!("Id: {}", person.id);
-                println!("Name: {}", person.name);
-                println!("Known for: {}", person.known_for_department);
-                println!("Movies: {}", movies);
-                println!();
-            });
-        }
+        Ok(result) => print(&result),
         Err(e) => println!("Something went wrong! {}", e),
     }
 }
@@ -50,4 +38,21 @@ fn get_first_arg() -> String {
             eprintln!("{}", e);
             exit(1)
         });
+}
+
+fn print(results: &Vec<SearchPersonResult>) {
+    results.iter().for_each(|person| {
+        let movies = person
+            .known_for
+            .iter()
+            .filter_map(|movie| movie.title.as_deref())
+            .collect::<Vec<&str>>()
+            .join(", ");
+
+        println!("Id: {}", person.id);
+        println!("Name: {}", person.name);
+        println!("Known for: {}", person.known_for_department);
+        println!("Movies: {}", movies);
+        println!();
+    });
 }
