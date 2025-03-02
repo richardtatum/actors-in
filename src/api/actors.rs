@@ -10,6 +10,13 @@ pub struct SearchPersonResult {
     pub id: u32,
     pub name: String,
     pub known_for_department: String,
+    pub known_for: Vec<KnownFor>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct KnownFor {
+    pub id: u32,
+    pub title: Option<String>, // It's 'title' for Movies, 'name' for TV
 }
 
 impl ActorService {

@@ -1,14 +1,10 @@
 mod api;
-mod credits;
 mod details;
 mod traits;
 
 use std::process::exit;
 
 use api::{actors::ActorService, client::ApiClient};
-use credits::credits::CreditsResponse;
-use details::details::DetailsResponse;
-use reqwest::{Client, Response};
 
 #[tokio::main]
 async fn main() {
@@ -19,13 +15,21 @@ async fn main() {
     match resp {
         Ok(result) => {
             result.iter().for_each(|person| {
+                let movies = person
+                    .known_for
+                    .iter()
+                    .filter_map(|movie| movie.title.as_deref())
+                    .collect::<Vec<&str>>()
+                    .join(", ");
+
                 println!("Id: {}", person.id);
                 println!("Name: {}", person.name);
                 println!("Known for: {}", person.known_for_department);
-                println!()
+                println!("Movies: {}", movies);
+                println!();
             });
         }
-        Err(_) => println!("Something went wrong!"),
+        Err(e) => println!("Something went wrong! {}", e),
     }
 }
 
@@ -49,4 +53,3 @@ fn get_access_token() -> String {
 //             eprintln!("{}", e);
 //             exit(1)
 //         });
-}
