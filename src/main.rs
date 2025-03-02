@@ -8,10 +8,11 @@ use api::{actors::ActorService, client::ApiClient};
 
 #[tokio::main]
 async fn main() {
+    let name = get_first_arg();
     let api_key = get_access_token();
     let api_client = ApiClient::new(api_key);
     let actor_service = ActorService::new(api_client);
-    let resp = actor_service.search_actor("tom ford".into()).await;
+    let resp = actor_service.search_actor(&name).await;
     match resp {
         Ok(result) => {
             result.iter().for_each(|person| {
@@ -41,15 +42,12 @@ fn get_access_token() -> String {
     });
 }
 
-// fn get_movie_id() -> u32 {
-//     return std::env::args()
-//         .nth(1)
-//         .ok_or("Must provide a movie id!")
-//         .and_then(|id| {
-//             id.parse::<u32>()
-//                 .map_err(|_| "Invalid movie id. Must be a number!")
-//         })
-//         .unwrap_or_else(|e| {
-//             eprintln!("{}", e);
-//             exit(1)
-//         });
+fn get_first_arg() -> String {
+    return std::env::args()
+        .nth(1)
+        .ok_or("Must provide a name!")
+        .unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            exit(1)
+        });
+}
