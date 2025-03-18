@@ -7,14 +7,18 @@ use std::process::exit;
 use api::{
     actors::{ActorService, SearchPersonResult},
     client::ApiClient,
+    movies::{MovieService, Role},
 };
 
 #[tokio::main]
 async fn main() {
     let name = get_first_arg();
+    let actor_id = 54693;
     let api_key = get_access_token();
     let api_client = ApiClient::new(api_key);
-    let actor_service = ActorService::new(api_client);
+    let actor_service = ActorService::new(&api_client);
+    let movie_service = MovieService::new(&api_client);
+
     let resp = actor_service.search_actor(&name).await;
     match resp {
         Ok(result) => print(&result),
